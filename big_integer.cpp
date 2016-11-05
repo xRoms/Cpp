@@ -360,15 +360,7 @@ big_integer operator>>(big_integer a, int b)
 
 bool operator==(big_integer const& x, big_integer const& y)
 {
-    if ((x.a.size() != y.a.size()) || (x.sign != y.sign)) {
-        return false;
-    }
-    for (uint32_t i = 0; i < x.a.size(); i++) {
-        if (x.a[i] != y.a[i]) {
-            return false;
-        }
-    }
-    return true;
+    return x.sign == y.sign && x.a == y.a;
 }
 
 bool operator!=(big_integer const& x, big_integer const& y)
