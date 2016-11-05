@@ -55,11 +55,8 @@ big_integer::~big_integer(){}
 
 big_integer& big_integer::operator=(big_integer const& x)
 {
-    big_integer b;
-    b.sign = x.sign;
-    b.a = x.a;
-    this->sign = b.sign;
-    this->a = b.a;
+    this->a = x.a;
+    this->sign = x.sign;
     return *this;
 }
 
