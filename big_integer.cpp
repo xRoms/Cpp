@@ -17,7 +17,7 @@ big_integer::big_integer()
 big_integer::big_integer(big_integer const& x)
 {
     a.clear();
-    for (int32_t i = 0; i < x.a.size(); i++) {
+    for (uint32_t i = 0; i < x.a.size(); i++) {
         a.push_back(x.a[i]);
     }
     sign = x.sign;
@@ -41,7 +41,7 @@ big_integer::big_integer(std::string const& str)
     if (str[0] == '-') {
         start = 1;
     }
-    for (int32_t i = start; i < str.size(); i++) {
+    for (uint32_t i = start; i < str.size(); i++) {
         *this *= big_integer(10);
         *this += (str[i] - '0');
     }
@@ -64,7 +64,7 @@ big_integer& big_integer::operator=(big_integer const& x)
 
 big_integer& big_integer::operator+=(big_integer const& rhs)
 {
-    for (int32_t i = 0; i < std::max(this->a.size(), rhs.a.size()); i++) {
+    for (uint32_t i = 0; i < std::max(this->a.size(), rhs.a.size()); i++) {
         if (i < this->a.size()) {
             this->a[i] = this->a[i] * this->sign + ((i < rhs.a.size()) ? (rhs.a[i] * rhs.sign) : 0);
         }
@@ -87,7 +87,7 @@ big_integer big_integer::multiply(int32_t const& rhs) const  {
 	big_integer ans;
 	ans.a.clear();
 	ans.sign = this->sign;
-	for (int32_t i = 0; i < this->a.size(); i++) {
+	for (uint32_t i = 0; i < this->a.size(); i++) {
 		r = static_cast<int64_t>(this->a[i]) * rhs + r;
 		ans.a.push_back(r % BASE);
 		r /= BASE;
@@ -105,15 +105,14 @@ big_integer & big_integer::operator*=(big_integer const & t) {
 	rhs.sign = 1;
 	big_integer tmp = 0;
 	tmp.a.clear();
-	for (int32_t i = rhs.a.size(); i > 0; i--) {
+	for (uint32_t i = rhs.a.size(); i > 0; i--) {
         if (i != rhs.a.size()) {
             tmp.a.push_back(0);
-            for (int32_t j = tmp.a.size() - 1; j > 0; j--) {
+            for (uint32_t j = tmp.a.size() - 1; j > 0; j--) {
                 std::swap(tmp.a[j], tmp.a[j - 1]);
             }
         }
-		int32_t j = rhs.a[i - 1];
-		tmp += this->multiply(j);
+		tmp += this->multiply(rhs.a[i - 1]);
 	}
 	this->a = tmp.a;
 	this->sign = sign;
@@ -129,7 +128,7 @@ big_integer& big_integer::operator/=(big_integer const& rhs)
 	}
 	if (rhs.a.size() == 1) {
 		int64_t r = 0, q = rhs.a.back();
-		for (int32_t j = this->a.size(); j > 0; j--) {
+		for (uint32_t j = this->a.size(); j > 0; j--) {
 			int64_t tmp = this->a[j - 1] + r * BASE;
 			this->a[j - 1] = tmp / q;
 			r = tmp % q;
@@ -158,15 +157,15 @@ big_integer& big_integer::operator/=(big_integer const& rhs)
 		res.push_back(1);
 		q -= b;
 	}
-	for (int32_t i = m; i > 0; i--) {
+	for (uint32_t i = m - 1; i >= 0; i--) {
 		if (q.a[0] == 0 && q.a.size() == 1) {
 			break;
 		}
 		b >>= POW;
-		res[i - 1] = std::min(((q.a[n + i - 1] * BASE + q.a[n + i - 2]) / static_cast<int64_t>(b.a.back())), BASE - static_cast<int64_t>(1));
-		q -= b.multiply(res[i - 1]);
+		res[i] = std::min(((q.a[n + i] * BASE + q.a[n + i - 1]) / static_cast<int64_t>(b.a.back())), BASE - static_cast<int64_t>(1));
+		q -= b.multiply(res[i]);
 		while (q < 0)  {
-			res[i - 1]--;
+			res[i]--;
 			q += b;
 		}
 	}
@@ -183,10 +182,10 @@ big_integer& big_integer::operator%=(big_integer const& rhs)
 
 big_integer& big_integer::operator&=(big_integer const& rhs)
 {
-    for (int32_t i = 0; i < std::min(this->a.size(), rhs.a.size()); i++) {
+    for (uint32_t i = 0; i < std::min(this->a.size(), rhs.a.size()); i++) {
         this->a[i] = (this->a[i]*this->sign) & (rhs.a[i] * rhs.sign);
     }
-    for (int32_t i = rhs.a.size(); i < this->a.size(); i++) {
+    for (uint32_t i = rhs.a.size(); i < this->a.size(); i++) {
         this->a[i] = 0;
     }
     this->normalize();
@@ -195,10 +194,10 @@ big_integer& big_integer::operator&=(big_integer const& rhs)
 
 big_integer& big_integer::operator|=(big_integer const& rhs)
 {
-    for (int32_t i = 0; i < std::min(this->a.size(), rhs.a.size()); i++) {
+    for (uint32_t i = 0; i < std::min(this->a.size(), rhs.a.size()); i++) {
         this->a[i] = (this->a[i]*this->sign) | (rhs.a[i]*rhs.sign);
     }
-    for (int32_t i = this->a.size(); i < rhs.a.size(); i++) {
+    for (uint32_t i = this->a.size(); i < rhs.a.size(); i++) {
         this->a.push_back(rhs.a[i]);
     }
     this->normalize();
@@ -207,10 +206,10 @@ big_integer& big_integer::operator|=(big_integer const& rhs)
 
 big_integer& big_integer::operator^=(big_integer const& rhs)
 {
-    for (int32_t i = 0; i < std::min(this->a.size(), rhs.a.size()); i++) {
+    for (uint32_t i = 0; i < std::min(this->a.size(), rhs.a.size()); i++) {
         this->a[i] = (this->a[i] * this->sign) ^ (rhs.a[i] * rhs.sign);
     }
-    for (int32_t i = this->a.size(); i < rhs.a.size(); i++) {
+    for (uint32_t i = this->a.size(); i < rhs.a.size(); i++) {
         this->a.push_back(rhs.a[i]);
     }
     this->normalize();
@@ -234,7 +233,7 @@ big_integer& big_integer::operator<<=(int rhs)
     for (int32_t i = 0; i < shift; i++) {
         ans.a.push_back(0);
     }
-    for (int32_t i = 0; i < this->a.size(); i++) {
+    for (uint32_t i = 0; i < this->a.size(); i++) {
         ans.a.push_back(this->a[i]);
     }
     ans *= (1 << mul);
@@ -256,8 +255,9 @@ big_integer& big_integer::operator>>=(int rhs)
     big_integer ans;
     ans.a.clear();
     ans.sign = this->sign;
-    for (int32_t i = shift; i < this->a.size(); i++) {
+    for (uint32_t i = shift; i < this->a.size(); i++) {
         ans.a.push_back(this->sign * ((this->sign * this->a[i]) >> mul));
+        ans.a[i - shift] += (i + 1 < this->a.size()) ? ((a[i + 1] % (1 << mul)) << (POW - mul)) : 0;
     }
     this->operator=(ans);
     return *this;
@@ -365,7 +365,7 @@ bool operator==(big_integer const& x, big_integer const& y)
     if ((x.a.size() != y.a.size()) || (x.sign != y.sign)) {
         return false;
     }
-    for (int32_t i = 0; i < x.a.size(); i++) {
+    for (uint32_t i = 0; i < x.a.size(); i++) {
         if (x.a[i] != y.a[i]) {
             return false;
         }
@@ -421,14 +421,14 @@ std::string to_string(big_integer const& x)
     }
     while (x1 > 0) {
         int32_t cur = x1.a[0] % 10;
-        for (int32_t i = 1; i < x1.a.size(); i++) {
+        for (uint32_t i = 1; i < x1.a.size(); i++) {
             cur += (x1.a[i] % 10) * wt[i % 4];
             cur %= 10;
         }
         s += ('0' + cur);
         x1 /= (int32_t)10;
     }
-    for (int32_t i = 0; i < s.size() / 2; i++) {
+    for (uint32_t i = 0; i < s.size() / 2; i++) {
         std::swap(s[i], s[s.size() - 1 - i]);
     }
     if (x.sign == -1) {
@@ -445,7 +445,7 @@ std::ostream& operator<<(std::ostream& s, big_integer const& a)
 inline void big_integer::normalize() {
     big_integer tmp = *this;
     tmp.a.push_back(0);
-    for (int32_t i = 0; i < tmp.a.size() - 1; i++) {
+    for (uint32_t i = 0; i < tmp.a.size() - 1; i++) {
         if (tmp.a[i] < 0) {
             tmp.a[i + 1]--;
             tmp.a[i] += BASE;
@@ -461,10 +461,10 @@ inline void big_integer::normalize() {
         tmp = *this;
         tmp.a.push_back(0);
         tmp.sign *= -1;
-        for (int32_t i = 0; i < tmp.a.size(); i++) {
+        for (uint32_t i = 0; i < tmp.a.size(); i++) {
             tmp.a[i] *= -1;
         }
-        for (int32_t i = 0; i < tmp.a.size() - 1; i++) {
+        for (uint32_t i = 0; i < tmp.a.size() - 1; i++) {
             if (tmp.a[i] < 0) {
                 tmp.a[i + 1]--;
                 tmp.a[i] += BASE;
@@ -480,7 +480,7 @@ inline void big_integer::normalize() {
     int32_t last = -1;
     this->a.clear();
     this->sign = tmp.sign;
-    for (int32_t i = 0; i < tmp.a.size(); i++) {
+    for (uint32_t i = 0; i < tmp.a.size(); i++) {
         if (tmp.a[i] != 0) {
             last = i;
         }

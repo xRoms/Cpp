@@ -49,9 +49,9 @@ struct big_integer
 
     friend std::string to_string(big_integer const& a);
 
-
+private:
     int64_t const static BASE = static_cast<int64_t>(std::numeric_limits<int32_t>::max()) + 1;
-    int64_t const POW = 31;
+    int32_t const POW = 31;
 	std::vector<int64_t> a;
     int8_t sign;
     inline void normalize();
