@@ -9,13 +9,13 @@
 #include "big_integer.h"
 
 big_integer::big_integer()
-    :sign(1)
-    ,a(1)
+    :a(1)
+    ,sign(1)
 {}
 
 big_integer::big_integer(big_integer const& x)
-    :sign(x.sign)
-    ,a(x.a)
+    :a(x.a)
+    ,sign(x.sign)
 {}
 
 big_integer::big_integer(int x)
