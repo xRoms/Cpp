@@ -9,24 +9,17 @@
 #include "big_integer.h"
 
 big_integer::big_integer()
-{
-    a.clear();
-    a.push_back(0);
-    sign = 1;
-}
+    :sign(1)
+    ,a(1)
+{}
 
 big_integer::big_integer(big_integer const& x)
-{
-    a.clear();
-    for (uint32_t i = 0; i < x.a.size(); i++) {
-        a.push_back(x.a[i]);
-    }
-    sign = x.sign;
-}
+    :sign(x.sign)
+    ,a(x.a)
+{}
 
 big_integer::big_integer(int x)
 {
-    a.clear();
     if (x == std::numeric_limits<int32_t>::min()) {
         a.push_back(0);
         a.push_back(1);
@@ -43,6 +36,7 @@ big_integer::big_integer(int x)
 }
 
 big_integer::big_integer(std::string const& str)
+    :sign(1)
 {
     int32_t start = 0;
     if (str[0] == '-') {
