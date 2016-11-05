@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <utility>
+#include <limits>
 #include "big_integer.h"
 
 big_integer::big_integer()
@@ -26,6 +27,12 @@ big_integer::big_integer(big_integer const& x)
 big_integer::big_integer(int x)
 {
     a.clear();
+    if (x == std::numeric_limits<int32_t>::min()) {
+        a.push_back(0);
+        a.push_back(1);
+        sign = -1;
+        return;
+    }
     a.push_back(abs(x));
     if (x != 0) {
         sign = x / abs(x);
@@ -426,7 +433,7 @@ std::string to_string(big_integer const& x)
             cur %= 10;
         }
         s += ('0' + cur);
-        x1 /= (int32_t)10;
+        x1 /= 10;
     }
     for (uint32_t i = 0; i < s.size() / 2; i++) {
         std::swap(s[i], s[s.size() - 1 - i]);
