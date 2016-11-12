@@ -130,10 +130,10 @@ big_integer& big_integer::operator-=(big_integer const& rhs)
         notzero = true;
     }
     else {
-        for (size_t i = this->a.size() - 1; (i >= 0) && !notzero; i--) {
-            if (this->a[i] != rhs.a[i]) {
+        for (size_t i = this->a.size(); (i > 0) && !notzero; i--) {
+            if (this->a[i - 1] != rhs.a[i - 1]) {
                 notzero = true;
-                if (this->a[i] > rhs.a[i]) {
+                if (this->a[i - 1] > rhs.a[i - 1]) {
                     larger = true;
                 }
                 else {
@@ -232,14 +232,14 @@ big_integer& big_integer::operator/=(big_integer const& rhs)
 		res.push_back(1);
 		q -= b;
 	}
-	for (size_t i = m - 1; i >= 0; i--) {
+	for (size_t i = m; i > 0; i--) {
 		if (q.a[0] == 0 && q.a.size() == 1) {
 			break;
 		}
 		b >>= POW;
-        res[i] = std::min(((q.a[n + i] * BASE + q.a[n + i - 1]) / static_cast<int64_t>(b.a.back())), BASE - static_cast<int64_t>(1));		q -= b.multiply(res[i]);
+        res[i - 1] = std::min(((q.a[n + i - 1] * BASE + q.a[n + i - 2]) / static_cast<int64_t>(b.a.back())), BASE - static_cast<int64_t>(1));		q -= b.multiply(res[i - 1]);
         while (q < 0)  {
-        	res[i]--;
+        	res[i - 1]--;
 			q += b;
 		}
 	}
