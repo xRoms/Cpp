@@ -86,21 +86,24 @@ big_integer big_integer::sum(std::vector<int64_t> const& a, std::vector<int64_t>
     uint32_t sizemax = std::max(a.size(), b.size());
     uint32_t sizemin = std::min(a.size(), b.size());
     tmp.a.resize(sizemax + 1);
+    uint64_t carry = 0;
+    uint64_t tmp1;
     for (size_t i = 0; i < sizemin; i++) {
-        tmp.a[i] += a[i] + b[i];
-        tmp.a[i + 1] += tmp.a[i] / BASE;
-        tmp.a[i] %= BASE;
+        tmp1 = a[i] + b[i] + carry;
+        tmp.a[i] = tmp1 % (uint64_t)BASE;
+        carry = tmp1 / (uint64_t)BASE;
     }
     for (size_t i = a.size(); i < b.size(); i++) {
-        tmp.a[i] += b[i];
-        tmp.a[i + 1] += tmp.a[i] / BASE;
-        tmp.a[i] %= BASE;
+        tmp1 = b[i] + carry;
+        tmp.a[i] = tmp1 % (uint64_t)BASE;
+        carry = tmp1 / (uint64_t)BASE;
     }
     for (size_t i = b.size(); i < a.size(); i++) {
-        tmp.a[i] += a[i];
-        tmp.a[i + 1] += tmp.a[i] / BASE;
-        tmp.a[i] %= BASE;
+        tmp1 = a[i] + carry;
+        tmp.a[i] = tmp1 % (uint64_t)BASE;
+        carry = tmp1 / (uint64_t)BASE;
     }
+    tmp.a[sizemax] = carry;
     return tmp;
 }
 

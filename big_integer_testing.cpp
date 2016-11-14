@@ -653,6 +653,7 @@ TEST(correctness, mul_merge_randomized)
         std::vector<big_integer> x;
         for (size_t i = 0; i != number_of_multipliers; ++i)
             x.push_back(myrand());
+
         big_integer a = merge_all(x);
         big_integer b = merge_all(x);
 
