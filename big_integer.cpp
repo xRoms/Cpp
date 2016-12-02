@@ -64,19 +64,29 @@ big_integer& big_integer::operator=(big_integer const& x)
 big_integer big_integer::sub(std::vector<int64_t> const& a, std::vector<int64_t> const& b) {
     big_integer tmp;
     tmp.a.resize(a.size());
+    int64_t carry = 0;
+    int64_t tmp1;
     for (size_t i = 0; i < b.size(); i++) {
-        tmp.a[i] += a[i] - b[i];
-        if (tmp.a[i] < 0) {                          // ÏÎÌÅÍßÒÜ ÊÀÊ Â ÑÓÌÌÅ
-            tmp.a[i + 1] -= 1;
-            tmp.a[i] += BASE;
+        tmp1 = carry + a[i] - b[i];
+        if (tmp1 < 0) {
+            carry = -1;
+            tmp1 += BASE;
         }
+        else {
+            carry = 0;
+        }
+        tmp.a[i] = tmp1;
     }
     for (size_t i = b.size(); i < a.size(); i++) {
-        tmp.a[i] += a[i];
-        if (tmp.a[i] < 0) {
-            tmp.a[i + 1] -= 1;
-            tmp.a[i] += BASE;
+        tmp1 = carry + a[i];
+        if (tmp1 < 0) {
+            carry = -1;
+            tmp1 += BASE;
         }
+        else {
+            carry = 0;
+        }
+        tmp.a[i] = tmp1;
     }
     return tmp;
 }
@@ -164,10 +174,11 @@ big_integer big_integer::multiply(int32_t const& rhs) const  {
 	int64_t r = 0;
 	big_integer ans;
 	ans.a.clear();                      //ÓÁÐÀÒÜ ÏÓØÁÝÊ ÑÄÊËÀÒÜ ÐÅÑÀÉÉÇ        ÅÙÅ Â ÑÄÂÈÃÅ
+	ans.a.resize(this->a.size());
 	ans.sign = this->sign;
 	for (size_t i = 0; i < this->a.size(); i++) {
 		r = static_cast<int64_t>(this->a[i]) * rhs + r;
-		ans.a.push_back(r % BASE);
+		ans.a[i] = r % BASE;
 		r /= BASE;
 	}
 	if (r) {
@@ -306,12 +317,13 @@ big_integer& big_integer::operator<<=(int rhs)
     uint32_t mul = rhs % POW;
     big_integer ans;
     ans.a.clear();
+    ans.a.resize(this->a.size() + shift);
     ans.sign = this->sign;
     for (size_t i = 0; i < shift; i++) {
-        ans.a.push_back(0);
+        ans.a[i] = 0;
     }
     for (size_t i = 0; i < this->a.size(); i++) {
-        ans.a.push_back(this->a[i]);
+        ans.a[i + shift] = this->a[i];
     }
     ans *= (1 << mul);
     this->operator=(ans);
@@ -331,9 +343,10 @@ big_integer& big_integer::operator>>=(int rhs)
     uint32_t mul = rhs % POW;
     big_integer ans;
     ans.a.clear();
+    ans.a.resize(this->a.size() - shift);
     ans.sign = this->sign;
     for (size_t i = shift; i < this->a.size(); i++) {
-        ans.a.push_back(this->sign * ((this->sign * this->a[i]) >> mul));
+        ans.a[i - shift] = this->sign * ((this->sign * this->a[i]) >> mul);
         ans.a[i - shift] += (i + 1 < this->a.size()) ? ((a[i + 1] & uint32_t((1 << mul) - 1)) << (POW - mul)) : 0;
     }
     this->operator=(ans);
@@ -559,8 +572,9 @@ inline void big_integer::normalize() {
         this->sign = 1;
         last = 0;
     }
+    this->a.resize(last + 1);
     for (size_t i = 0; i <= (uint32_t)last; i++) {
-        this->a.push_back(tmp.a[i]);
+        this->a[i] = tmp.a[i];
     }
 }
 
