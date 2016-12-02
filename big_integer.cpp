@@ -66,7 +66,7 @@ big_integer big_integer::sub(std::vector<int64_t> const& a, std::vector<int64_t>
     tmp.a.resize(a.size());
     for (size_t i = 0; i < b.size(); i++) {
         tmp.a[i] += a[i] - b[i];
-        if (tmp.a[i] < 0) {
+        if (tmp.a[i] < 0) {                          // ÏÎÌÅÍßÒÜ ÊÀÊ Â ÑÓÌÌÅ
             tmp.a[i + 1] -= 1;
             tmp.a[i] += BASE;
         }
@@ -163,7 +163,7 @@ big_integer& big_integer::operator-=(big_integer const& rhs)
 big_integer big_integer::multiply(int32_t const& rhs) const  {
 	int64_t r = 0;
 	big_integer ans;
-	ans.a.clear();
+	ans.a.clear();                      //ÓÁÐÀÒÜ ÏÓØÁÝÊ ÑÄÊËÀÒÜ ÐÅÑÀÉÉÇ        ÅÙÅ Â ÑÄÂÈÃÅ
 	ans.sign = this->sign;
 	for (size_t i = 0; i < this->a.size(); i++) {
 		r = static_cast<int64_t>(this->a[i]) * rhs + r;
@@ -334,7 +334,7 @@ big_integer& big_integer::operator>>=(int rhs)
     ans.sign = this->sign;
     for (size_t i = shift; i < this->a.size(); i++) {
         ans.a.push_back(this->sign * ((this->sign * this->a[i]) >> mul));
-        ans.a[i - shift] += (i + 1 < this->a.size()) ? ((a[i + 1] % (1 << mul)) << (POW - mul)) : 0;
+        ans.a[i - shift] += (i + 1 < this->a.size()) ? ((a[i + 1] & uint32_t((1 << mul) - 1)) << (POW - mul)) : 0;
     }
     this->operator=(ans);
     return *this;
