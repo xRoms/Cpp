@@ -61,92 +61,18 @@ big_integer& big_integer::operator=(big_integer const& x)
 }
 
 
-big_integer big_integer::sub(std::vector<int64_t> const& a, std::vector<int64_t> const& b) {
-    big_integer tmp;
-    tmp.a.resize(a.size());
-    int64_t carry = 0;
-    int64_t tmp1;
-    for (size_t i = 0; i < b.size(); i++) {
-        tmp1 = carry + a[i] - b[i];
-        if (tmp1 < 0) {
-            carry = -1;
-            tmp1 += BASE;
-        }
-        else {
-            carry = 0;
-        }
-        tmp.a[i] = tmp1;
-    }
-    for (size_t i = b.size(); i < a.size(); i++) {
-        tmp1 = carry + a[i];
-        if (tmp1 < 0) {
-            carry = -1;
-            tmp1 += BASE;
-        }
-        else {
-            carry = 0;
-        }
-        tmp.a[i] = tmp1;
-    }
-    return tmp;
-}
-
-big_integer big_integer::sum(std::vector<int64_t> const& a, std::vector<int64_t> const& b) {
-    big_integer tmp;
-    uint32_t sizemax = std::max(a.size(), b.size());
-    uint32_t sizemin = std::min(a.size(), b.size());
-    tmp.a.resize(sizemax + 1);
-    uint64_t carry = 0;
-    uint64_t tmp1;
-    for (size_t i = 0; i < sizemin; i++) {
-        tmp1 = a[i] + b[i] + carry;
-        tmp.a[i] = tmp1 % (uint64_t)BASE;
-        carry = tmp1 / (uint64_t)BASE;
-    }
-    for (size_t i = a.size(); i < b.size(); i++) {
-        tmp1 = b[i] + carry;
-        tmp.a[i] = tmp1 % (uint64_t)BASE;
-        carry = tmp1 / (uint64_t)BASE;
-    }
-    for (size_t i = b.size(); i < a.size(); i++) {
-        tmp1 = a[i] + carry;
-        tmp.a[i] = tmp1 % (uint64_t)BASE;
-        carry = tmp1 / (uint64_t)BASE;
-    }
-    tmp.a[sizemax] = carry;
-    return tmp;
-}
-
-big_integer& big_integer::operator+=(big_integer const& rhs)
-{
-    if (this->sign != rhs.sign) {
-        *this -= -rhs;
-        return *this;
-    }
-    this->a = sum(this->a, rhs.a).a;
-    this->delete_zeroes();
-    return *this;
-}
-big_integer& big_integer::operator-=(big_integer const& rhs)
-{
-    if (this->sign != rhs.sign) {
-        *this += -rhs;
-        return *this;
-    }
-    big_integer rhs1 = rhs;
-    rhs1.sign = 1;
-
+int big_integer::cmp(std::vector<int64_t> const& a, std::vector<int64_t> const& b) {
     bool larger;
     bool notzero = false;
-    if (this->a.size() != rhs.a.size()) {
-        larger = this->a.size() > rhs.a.size();
+    if (a.size() != b.size()) {
+        larger = a.size() > b.size();
         notzero = true;
     }
     else {
-        for (size_t i = this->a.size(); (i > 0) && !notzero; i--) {
-            if (this->a[i - 1] != rhs.a[i - 1]) {
+        for (size_t i = a.size(); (i > 0) && !notzero; i--) {
+            if (a[i - 1] != b[i - 1]) {
                 notzero = true;
-                if (this->a[i - 1] > rhs.a[i - 1]) {
+                if (a[i - 1] > b[i - 1]) {
                     larger = true;
                 }
                 else {
@@ -156,16 +82,93 @@ big_integer& big_integer::operator-=(big_integer const& rhs)
         }
     }
     if (!notzero) {
+        return 0;
+    }
+    if (larger) {
+        return 1;
+    }
+    else {
+        return -1;
+    }
+
+}
+
+big_integer& big_integer::operator+=(big_integer const& rhs)
+{
+    if (this->sign != rhs.sign) {
+        *this -= -rhs;
+        return *this;
+    }
+    uint32_t sizemax = std::max(this->a.size(), rhs.a.size());
+    uint32_t sizemin = std::min(this->a.size(), rhs.a.size());
+    size_t prevsize = this->a.size();
+    this->a.resize(sizemax + 1);
+    uint64_t carry = 0;
+    uint64_t tmp;
+    for (size_t i = 0; i < sizemin; i++) {
+        tmp = this->a[i] + rhs.a[i] + carry;
+        this->a[i] = tmp % (uint64_t)BASE;
+        carry = tmp / (uint64_t)BASE;
+    }
+    for (size_t i = prevsize; i < rhs.a.size(); i++) {
+        tmp = rhs.a[i] + carry;
+        this->a[i] = tmp % (uint64_t)BASE;
+        carry = tmp / (uint64_t)BASE;
+    }
+    for (size_t i = rhs.a.size(); i < prevsize; i++) {
+        tmp = this->a[i] + carry;
+        this->a[i] = tmp % (uint64_t)BASE;
+        carry = tmp / (uint64_t)BASE;
+    }
+    this->a[sizemax] = carry;
+    this->delete_zeroes();
+    return *this;
+}
+big_integer& big_integer::operator-=(big_integer const& rhs)
+{
+    if (this->sign != rhs.sign) {
+        *this += -rhs;
+        return *this;
+    }
+
+    int compare = cmp(this->a, rhs.a);
+
+    if (compare == 0) {
         *this = 0;
         return *this;
     }
-    if (larger) {
-        this->a = sub(this->a,rhs1.a).a;
-    }
-    else {
+    const std::vector<int64_t>* f = &this->a;
+    const std::vector<int64_t>* s = &rhs.a;
+    if (compare < 0) {
         this->sign *= -1;
-        this->a = sub(rhs1.a, this->a).a;
+        std::swap(f, s);
     }
+    this->a.resize(f->size());
+    int64_t carry = 0;
+    int64_t tmp;
+    for (size_t i = 0; i < s->size(); i++) {
+        tmp = carry + f->at(i) - s->at(i);
+        if (tmp < 0) {
+            carry = -1;
+            tmp += BASE;
+        }
+        else {
+            carry = 0;
+        }
+        this->a[i] = tmp;
+    }
+    for (size_t i = s->size(); i < f->size(); i++) {
+        tmp = carry + f->at(i);
+        if (tmp < 0) {
+            carry = -1;
+            tmp += BASE;
+        }
+        else {
+            carry = 0;
+        }
+        this->a[i] = tmp;
+    }
+
     this->delete_zeroes();
     return *this;
 }

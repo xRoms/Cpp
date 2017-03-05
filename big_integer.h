@@ -57,8 +57,7 @@ private:
     inline void normalize();
     void delete_zeroes();
 	big_integer multiply(int32_t const& rhs) const;
-	static big_integer sum(std::vector<int64_t> const& a, std::vector<int64_t> const& b);
-	static big_integer sub(std::vector<int64_t> const& a, std::vector<int64_t> const& b);
+	static int cmp(std::vector<int64_t> const& a, std::vector<int64_t> const& b);
 };
 
 big_integer operator+(big_integer a, big_integer const& b);
