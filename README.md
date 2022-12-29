@@ -1,1 +1,1 @@
-# big_integer
+# C++ course
